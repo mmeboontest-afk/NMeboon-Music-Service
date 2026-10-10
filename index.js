@@ -84,8 +84,6 @@ client.once(Events.ClientReady, async () => {
   await library.scan();
   setInterval(() => library.scan(), config.rescanMinutes * 60_000);
 
-  startWeb({ library, player, stats });
-
   try {
     await player.start();
   } catch (e) {
@@ -136,5 +134,8 @@ for (const ev of [Events.ChannelCreate, Events.ChannelDelete, Events.ChannelUpda
 
 client.on(Events.Error, (e) => console.error('[client]', e.message));
 process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e?.message ?? e));
+
+// Open the website right away so Render sees the port even while the bot is still logging in
+startWeb({ library, player, stats });
 
 client.login(config.token);
