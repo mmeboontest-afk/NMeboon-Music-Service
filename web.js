@@ -13,7 +13,12 @@ export function startWeb({ library, player, stats }) {
   app.disable('x-powered-by');
   app.get('/healthz', (_req, res) => res.json({ ok: true }));
   app.use(express.json({ limit: '4kb' }));
-  app.use(express.static(path.join(__dirname, '..', 'public')));
+  // Flat layout: the three website files sit next to this file
+  const sendWeb = (file) => (_req, res) => res.sendFile(path.join(__dirname, file));
+  app.get('/', sendWeb('index.html'));
+  app.get('/index.html', sendWeb('index.html'));
+  app.get('/style.css', sendWeb('style.css'));
+  app.get('/app.js', sendWeb('app.js'));
 
   /* ----------------------------- SSE ----------------------------- */
   const clients = new Set();

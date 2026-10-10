@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Cat-cafe themed Discord music bot with a request-only web jukebox",
   "type": "module",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node index.js"
   },
   "engines": {
     "node": ">=20"
