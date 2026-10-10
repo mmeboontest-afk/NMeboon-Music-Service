@@ -84,19 +84,46 @@ export class Library extends EventEmitter {
     return found;
   }
 
+  // Pick the server that actually contains the music category
+  async #findGuild() {
+    if (config.guildId) {
+      const g = this.client.guilds.cache.get(config.guildId);
+      if (g) return g;
+    }
+    for (const g of this.client.guilds.cache.values()) {
+      try {
+        const chans = await g.channels.fetch();
+        if (chans.has(config.categoryId)) return g;
+      } catch {
+        /* skip servers we cannot read */
+      }
+    }
+    return this.client.guilds.cache.first();
+  }
+
   async scan() {
     if (this.scanning) return;
     this.scanning = true;
     try {
-      const guild = this.client.guilds.cache.get(config.guildId) ?? this.client.guilds.cache.first();
-      if (!guild) throw new Error('Bot is not in any guild');
+      const guild = await this.#findGuild();
+      if (!guild) throw new Error('Bot is not in any server');
       const all = await guild.channels.fetch();
+      const category = all.get(config.categoryId);
+      if (!category) {
+        console.warn(
+          `[library] category ${config.categoryId} not found in server "${guild.name}". ` +
+            'Check CATEGORY_ID, and that the bot can see that category.',
+        );
+      } else {
+        console.log(`[library] reading category "${category.name}" in server "${guild.name}"`);
+      }
       const songChannels = [...all.values()]
         .filter((c) => c && Library.isSongChannel(c) && c.parentId === config.categoryId)
         .sort((a, b) => a.rawPosition - b.rawPosition);
 
       const tracks = new Map();
       const channels = new Map();
+      let seen = 0;
       for (const ch of songChannels) {
         channels.set(ch.id, { id: ch.id, name: ch.name, position: ch.rawPosition });
         try {
@@ -107,11 +134,25 @@ export class Library extends EventEmitter {
             if (!batch.size) break;
             for (const m of batch.values()) this.#collect(m, ch, tracks);
             fetched += batch.size;
+            seen += batch.size;
             before = batch.last().id;
           }
         } catch (e) {
           console.warn(`[library] cannot read #${ch.name}: ${e.message}`);
         }
+      }
+      for (const ch of channels.values()) {
+        const n = [...tracks.values()].filter((t) => t.channelId === ch.id).length;
+        console.log(`[library] #${ch.name}: ${n} audio file(s)`);
+      }
+      if (tracks.size === 0) {
+        console.warn(
+          seen
+            ? `[library] read ${seen} message(s) but found no audio files. Turn ON "Message Content Intent" ` +
+                'in the Discord Developer Portal (Bot tab) and redeploy.'
+            : '[library] no messages could be read. Give the bot View Channel + Read Message History ' +
+                'on the song channels, and check CATEGORY_ID.',
+        );
       }
       this.tracks = tracks;
       this.channels = channels;

@@ -31,7 +31,7 @@ npm start
 ### สร้างบอท
 
 1. https://discord.com/developers/applications → New Application → Bot → Reset Token (เอาไปใส่ `DISCORD_TOKEN`)
-2. **ไม่ต้องเปิด Privileged Intents** (ใช้แค่ Guilds, Guild Voice States, Guild Messages)
+2. ในแท็บ Bot → Privileged Gateway Intents ให้ **เปิด Message Content Intent** แล้วกด Save (จำเป็น ไม่งั้นบอทจะมองไม่เห็นไฟล์เพลงในข้อความ)
 3. เชิญบอทด้วย scope `bot` และ permission:
    - View Channels, Read Message History (ช่องในหมวดเพลง)
    - Connect, Speak (ห้องฟังเพลง)

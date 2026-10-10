@@ -11,7 +11,13 @@ if (!config.token) {
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    // Needed to see file attachments in messages (enable "Message Content Intent" in the Developer Portal)
+    GatewayIntentBits.MessageContent,
+  ],
   partials: [Partials.Message, Partials.Channel],
 });
 
@@ -138,4 +144,12 @@ process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e?
 // Open the website right away so Render sees the port even while the bot is still logging in
 startWeb({ library, player, stats });
 
-client.login(config.token);
+client.login(config.token).catch((e) => {
+  console.error('[login failed]', e.message);
+  if (/disallowed intents/i.test(e.message)) {
+    console.error(
+      'Fix: Discord Developer Portal -> your app -> Bot -> turn ON "Message Content Intent", Save, then redeploy.',
+    );
+  }
+  process.exit(1);
+});
