@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: nodistub-cat-cafe
+    runtime: node
+    plan: starter            # free plan sleeps after 15 min idle -> the bot would go offline
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DISCORD_TOKEN
+        sync: false          # paste it in the Render dashboard
+      - key: GUILD_ID
+        sync: false
+      - key: CATEGORY_ID
+        value: "1558578154820604014"
+      - key: VOICE_CHANNEL_ID
+        value: "1486496068295331932"
+      - key: DATA_DIR
+        value: /var/data
+    disk:                    # optional (paid): keeps request counts across deploys
+      name: cafe-data
+      mountPath: /var/data
+      sizeGB: 1

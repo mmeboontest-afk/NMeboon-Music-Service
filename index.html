@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nodistub Cat Cafe · Music Studio</title>
+  <meta name="theme-color" content="#fff4e3" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="idle">
+  <div class="bg" aria-hidden="true">
+    <div class="window-light"></div>
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-paw">🐾</span>
+      <div>
+        <h1>Nodistub Cat Cafe</h1>
+        <p>Music Studio · request-only jukebox</p>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="pill" id="connPill"><i class="dot"></i><span id="connText">Connecting…</span></span>
+      <span class="pill" id="listenPill">🎧 <b id="listenCount">0</b> listening</span>
+      <label class="nick">
+        <span>Your name</span>
+        <input id="nick" maxlength="24" placeholder="Guest cat" autocomplete="off" />
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <!-- ======================= STUDIO ======================= -->
+    <section class="studio card">
+      <div class="stage">
+        <div class="lamp"></div>
+
+        <div class="deck">
+          <div class="platter">
+            <div class="vinyl" id="vinyl">
+              <div class="label"><span>🐟</span></div>
+            </div>
+          </div>
+          <div class="tonearm"><i></i></div>
+        </div>
+
+        <div class="cat-wrap">
+          <svg class="cat" viewBox="0 0 220 220" role="img" aria-label="A cat wearing headphones">
+            <g class="tail"><path d="M158 190 C205 190 212 140 190 128" fill="none" stroke="#e8a45a" stroke-width="14" stroke-linecap="round"/></g>
+            <ellipse cx="110" cy="182" rx="58" ry="36" fill="#f2b36b"/>
+            <ellipse cx="86" cy="206" rx="15" ry="9" fill="#f7c58d"/>
+            <ellipse cx="134" cy="206" rx="15" ry="9" fill="#f7c58d"/>
+            <g class="head">
+              <path d="M58 82 L62 30 L98 58 Z" fill="#f2b36b"/>
+              <path d="M162 82 L158 30 L122 58 Z" fill="#f2b36b"/>
+              <path d="M67 70 L69 43 L88 59 Z" fill="#f4a9b5"/>
+              <path d="M153 70 L151 43 L132 59 Z" fill="#f4a9b5"/>
+              <circle cx="110" cy="108" r="56" fill="#f6c07e"/>
+              <path d="M110 56 v14 M96 59 l3 12 M124 59 l-3 12" stroke="#e39a4f" stroke-width="5" stroke-linecap="round"/>
+              <g class="eyes">
+                <ellipse class="eye" cx="88" cy="108" rx="6.5" ry="8.5" fill="#4a2c1d"/>
+                <ellipse class="eye" cx="132" cy="108" rx="6.5" ry="8.5" fill="#4a2c1d"/>
+                <circle cx="90" cy="105" r="2.2" fill="#fff"/>
+                <circle cx="134" cy="105" r="2.2" fill="#fff"/>
+              </g>
+              <path d="M104 121 h12 l-6 7 Z" fill="#e8798f"/>
+              <path d="M110 128 v4 M110 132 q-7 7 -14 2 M110 132 q7 7 14 2" fill="none" stroke="#7a4a33" stroke-width="2.6" stroke-linecap="round"/>
+              <circle cx="72" cy="125" r="8" fill="#f4a9b5" opacity=".55"/>
+              <circle cx="148" cy="125" r="8" fill="#f4a9b5" opacity=".55"/>
+              <path d="M64 122 l-20 -4 M64 129 l-20 4 M156 122 l20 -4 M156 129 l20 4" stroke="#7a4a33" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+              <path d="M52 112 A58 62 0 0 1 168 112" fill="none" stroke="#5a3b2a" stroke-width="9" stroke-linecap="round"/>
+              <rect x="38" y="96" width="24" height="42" rx="12" fill="#e8798f"/>
+              <rect x="158" y="96" width="24" height="42" rx="12" fill="#e8798f"/>
+              <rect x="44" y="104" width="12" height="26" rx="6" fill="#f9b4c2"/>
+              <rect x="164" y="104" width="12" height="26" rx="6" fill="#f9b4c2"/>
+            </g>
+            <g class="zzz" fill="#8a5a3c" font-family="Fredoka, sans-serif" font-weight="600">
+              <text x="168" y="62" font-size="22">z</text>
+              <text x="184" y="42" font-size="17">z</text>
+              <text x="196" y="26" font-size="13">z</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="cup" aria-hidden="true">
+          <span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>
+          <svg viewBox="0 0 80 64"><path d="M10 18 h48 v18 a22 22 0 0 1 -22 22 h-4 a22 22 0 0 1 -22 -22 Z" fill="#fffaf1" stroke="#c9a47a" stroke-width="3"/><path d="M58 24 h6 a8 8 0 0 1 0 16 h-8" fill="none" stroke="#c9a47a" stroke-width="3"/><ellipse cx="34" cy="20" rx="22" ry="4" fill="#8a5a3c"/><path d="M28 20 q3 -3 6 0 q3 3 6 0" fill="none" stroke="#fffaf1" stroke-width="1.6"/></svg>
+        </div>
+      </div>
+
+      <div class="np">
+        <span class="eyebrow" id="npEyebrow">Now playing</span>
+        <h2 id="npTitle">The studio is quiet…</h2>
+        <div class="chips" id="npChips"></div>
+
+        <div class="progress">
+          <span id="tCur">0:00</span>
+          <div class="bar"><i id="barFill"></i></div>
+          <span id="tDur">--:--</span>
+        </div>
+
+        <div class="eq" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <p class="hint" id="npHint">Pick a song below and the cat DJ will spin it. 🎶</p>
+      </div>
+    </section>
+
+    <!-- ======================= GRID ======================= -->
+    <div class="grid">
+      <aside class="side">
+        <section class="card queue">
+          <h3>Up next <small id="queueCount"></small></h3>
+          <ol id="queueList" class="queue-list"></ol>
+          <p class="empty" id="queueEmpty">The queue is empty.<br />The cat DJ will shuffle something cozy. 🐱</p>
+        </section>
+
+        <section class="card top-picks">
+          <h3>Most requested <small>🐾 paws up</small></h3>
+          <ol id="topList" class="top-list"></ol>
+          <p class="empty" id="topEmpty">No requests yet — be the first!</p>
+        </section>
+      </aside>
+
+      <section class="main-col">
+        <section class="card fresh" id="freshCard" hidden>
+          <h3>✨ Fresh from the oven</h3>
+          <div class="fresh-strip" id="freshStrip"></div>
+        </section>
+
+        <section class="card library">
+          <div class="lib-head">
+            <h3>Song menu <small id="libCount"></small></h3>
+            <div class="lib-tools">
+              <input id="search" type="search" placeholder="Search songs…" autocomplete="off" />
+              <select id="sort" aria-label="Sort songs">
+                <option value="new">Newest first</option>
+                <option value="top">Most requested</option>
+                <option value="az">A – Z</option>
+              </select>
+            </div>
+          </div>
+          <div class="tabs" id="tabs"></div>
+          <ul class="tracks" id="tracks"></ul>
+          <button class="more" id="moreBtn" hidden>Show more</button>
+          <p class="empty" id="libEmpty" hidden>No songs found. 🔍</p>
+        </section>
+      </section>
+    </div>
+
+    <footer>Made with 🐾 and warm milk · songs come from the Discord music category · requests are web-only</footer>
+  </main>
+
+  <div id="toasts" aria-live="polite"></div>
+  <audio id="preview" preload="none"></audio>
+  <script src="/app.js"></script>
+</body>
+</html>
