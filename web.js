@@ -13,12 +13,10 @@ export function startWeb({ library, player, stats }) {
   app.disable('x-powered-by');
   app.get('/healthz', (_req, res) => res.json({ ok: true }));
   app.use(express.json({ limit: '4kb' }));
-  // Flat layout: the three website files sit next to this file
+  // Flat layout: the website files sit next to this file
   const sendWeb = (file) => (_req, res) => res.sendFile(path.join(__dirname, file));
   app.get('/', sendWeb('index.html'));
-  app.get('/index.html', sendWeb('index.html'));
-  app.get('/style.css', sendWeb('style.css'));
-  app.get('/app.js', sendWeb('app.js'));
+  for (const f of ['index.html', 'style.css', 'app.js', 'saver.css', 'saver.js']) app.get('/' + f, sendWeb(f));
 
   /* ----------------------------- SSE ----------------------------- */
   const clients = new Set();
@@ -124,6 +122,14 @@ export function startWeb({ library, player, stats }) {
       .slice(0, 24);
     if (!nick) nick = 'Guest cat';
     const result = player.enqueue(trackId, nick);
+    res.status(result.ok ? 200 : 400).json(result);
+  });
+
+  app.post('/api/loop', (req, res) => {
+    if (limited(req.ip)) {
+      return res.status(429).json({ ok: false, error: 'Slow down a little, kitty!' });
+    }
+    const result = player.setLoop(Boolean(req.body?.on));
     res.status(result.ok ? 200 : 400).json(result);
   });
 

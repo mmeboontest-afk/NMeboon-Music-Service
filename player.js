@@ -31,6 +31,7 @@ export class MusicPlayer extends EventEmitter {
     this.resource = null;
     this.recent = [];
     this.durations = new Map();
+    this.loop = false; // repeat the current song (turned off by any new request)
 
     this.player = createAudioPlayer({
       behaviors: { noSubscriber: NoSubscriberBehavior.Pause },
@@ -130,6 +131,7 @@ export class MusicPlayer extends EventEmitter {
     if (this.queue.length >= config.queueMax) return { ok: false, error: 'The queue is full, try again later' };
 
     this.queue.push({ track, requestedBy, requestedAt: Date.now(), auto: false });
+    this.loop = false; // a request always wins over looping
     this.stats.addRequest(trackId);
     this.emitChange();
     if (!this.nowPlaying && this.listeners > 0) this.playNext();
@@ -158,8 +160,16 @@ export class MusicPlayer extends EventEmitter {
     return track ? { track, requestedBy: null, requestedAt: Date.now(), auto: true } : null;
   }
 
+  setLoop(on) {
+    if (!this.nowPlaying) return { ok: false, error: 'Nothing is playing right now' };
+    this.loop = !!on;
+    this.emitChange();
+    return { ok: true, loop: this.loop };
+  }
+
   async #play(item) {
     const { track } = item;
+    if (!item.loop) this.loop = false;
     try {
       const url = await this.library.freshUrl(track);
       const res = await fetch(url);
@@ -174,9 +184,11 @@ export class MusicPlayer extends EventEmitter {
       };
       this.player.play(resource);
 
-      this.stats.addPlay(track.id);
-      this.recent.push(track.id);
-      if (this.recent.length > 50) this.recent.shift();
+      if (!item.loop) {
+        this.stats.addPlay(track.id);
+        this.recent.push(track.id);
+        if (this.recent.length > 50) this.recent.shift();
+      }
 
       console.log(`[player] now playing: ${track.title} (${item.auto ? 'auto' : 'request'})`);
       this.emit('trackchange', this.nowPlaying);
@@ -192,6 +204,10 @@ export class MusicPlayer extends EventEmitter {
 
   #onIdle() {
     if (!this.nowPlaying) return;
+    const prev = this.nowPlaying;
+    if (this.loop && this.listeners > 0) {
+      this.queue.unshift({ track: prev.track, requestedBy: prev.requestedBy, requestedAt: Date.now(), auto: prev.auto, loop: true });
+    }
     this.nowPlaying = null;
     this.resource = null;
     this.emit('trackchange', null);
@@ -252,6 +268,7 @@ export class MusicPlayer extends EventEmitter {
       inVoice: this.connection?.state?.status === VoiceConnectionStatus.Ready,
       voiceChannel: voice?.name ?? null,
       listeners: this.listeners,
+      loop: this.loop,
       paused,
       nowPlaying: np
         ? {

@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/saver.css" />
 </head>
 <body class="idle">
   <div class="bg" aria-hidden="true">
@@ -27,6 +28,7 @@
     </div>
     <div class="top-right">
       <span class="pill" id="connPill"><i class="dot"></i><span id="connText">Connecting…</span></span>
+      <button class="pill pill-btn" id="openSaver" type="button" title="Open the sakura screensaver">🌸 Screensaver</button>
       <span class="pill" id="listenPill">🎧 <b id="listenCount">0</b> listening</span>
       <label class="nick">
         <span>Your name</span>
@@ -157,8 +159,109 @@
     <footer>Made with 🐾 and warm milk · songs come from the Discord music category · requests are web-only</footer>
   </main>
 
+  <!-- ======================= SCREENSAVER ======================= -->
+  <div id="saver" class="saver" hidden aria-hidden="true">
+    <div class="sky"></div>
+    <div class="stars" id="sStars"></div>
+    <div class="orb sun" id="sSun"></div>
+    <div class="orb moon" id="sMoon"></div>
+    <div class="clouds" id="sClouds"></div>
+
+    <svg class="hills" viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 150 C180 60 340 70 520 140 C720 215 860 90 1060 100 C1250 110 1350 150 1440 120 L1440 400 L0 400 Z"/>
+      <path d="M0 230 C200 160 380 180 560 230 C760 285 940 190 1130 215 C1290 235 1380 260 1440 230 L1440 400 L0 400 Z"/>
+      <path d="M0 320 C240 270 420 300 640 330 C860 360 1060 290 1240 305 C1340 313 1400 330 1440 322 L1440 400 L0 400 Z"/>
+    </svg>
+
+    <div class="fireflies" id="sFlies"></div>
+
+    <svg class="tree" id="sTree" viewBox="0 0 620 380" aria-hidden="true">
+      <path d="M-10 40 C120 30 200 70 290 120 C360 160 430 190 520 200" fill="none" stroke="#6a4636" stroke-width="22" stroke-linecap="round"/>
+      <path d="M200 70 C260 40 330 30 410 52" fill="none" stroke="#7a5240" stroke-width="12" stroke-linecap="round"/>
+      <path d="M300 126 C330 190 350 240 345 300" fill="none" stroke="#7a5240" stroke-width="10" stroke-linecap="round"/>
+      <path d="M430 188 C470 230 480 270 470 320" fill="none" stroke="#7a5240" stroke-width="8" stroke-linecap="round"/>
+      <g id="sBlossoms"></g>
+    </svg>
+
+    <canvas id="sFx"></canvas>
+
+    <div class="s-clock">
+      <div class="s-time" id="sTime">00<span class="colon">:</span>00</div>
+      <div class="s-date" id="sDate"></div>
+      <div class="s-greet" id="sGreet"></div>
+    </div>
+
+    <div class="s-cat" id="sCat" role="button" aria-label="Pet the cat" tabindex="0">
+      <div class="bubble" id="sBubble">meow~</div>
+      <svg viewBox="0 0 260 260">
+        <g class="scat-tail"><path d="M188 232 C246 232 256 168 228 150" fill="none" stroke="#e8a45a" stroke-width="18" stroke-linecap="round"/></g>
+        <ellipse cx="130" cy="222" rx="72" ry="42" fill="#f2b36b"/>
+        <ellipse cx="100" cy="250" rx="19" ry="10" fill="#f7c58d"/>
+        <ellipse cx="160" cy="250" rx="19" ry="10" fill="#f7c58d"/>
+        <path d="M118 206 q12 14 24 0" fill="none" stroke="#e39a4f" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+        <g class="scat-head">
+          <path d="M66 100 L72 34 L116 70 Z" fill="#f2b36b"/>
+          <g class="scat-ear-r"><path d="M194 100 L188 34 L144 70 Z" fill="#f2b36b"/><path d="M180 86 L178 52 L156 72 Z" fill="#f4a9b5"/></g>
+          <path d="M78 86 L80 52 L102 72 Z" fill="#f4a9b5"/>
+          <circle cx="130" cy="130" r="66" fill="#f6c07e"/>
+          <path d="M130 66 v17 M113 70 l4 14 M147 70 l-4 14" stroke="#e39a4f" stroke-width="6" stroke-linecap="round"/>
+          <g class="eyes-open">
+            <ellipse class="scat-eye" cx="104" cy="130" rx="7.5" ry="10" fill="#4a2c1d"/>
+            <ellipse class="scat-eye" cx="156" cy="130" rx="7.5" ry="10" fill="#4a2c1d"/>
+            <circle cx="106.5" cy="126" r="2.6" fill="#fff"/><circle cx="158.5" cy="126" r="2.6" fill="#fff"/>
+          </g>
+          <g class="eyes-happy" fill="none" stroke="#4a2c1d" stroke-width="4.5" stroke-linecap="round">
+            <path d="M94 134 q10 -14 20 0"/><path d="M146 134 q10 -14 20 0"/>
+          </g>
+          <path d="M123 146 h14 l-7 8 Z" fill="#e8798f"/>
+          <path d="M130 154 v4 M130 158 q-8 8 -16 3 M130 158 q8 8 16 3" fill="none" stroke="#7a4a33" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="84" cy="150" r="9" fill="#f4a9b5" opacity=".55"/><circle cx="176" cy="150" r="9" fill="#f4a9b5" opacity=".55"/>
+          <path d="M76 146 l-24 -5 M76 154 l-24 5 M184 146 l24 -5 M184 154 l24 5" stroke="#7a4a33" stroke-width="2.2" stroke-linecap="round" opacity=".6"/>
+          <path d="M60 134 A70 74 0 0 1 200 134" fill="none" stroke="#5a3b2a" stroke-width="10" stroke-linecap="round"/>
+          <rect x="44" y="114" width="28" height="50" rx="14" fill="#e8798f"/>
+          <rect x="188" y="114" width="28" height="50" rx="14" fill="#e8798f"/>
+          <rect x="51" y="123" width="14" height="32" rx="7" fill="#f9b4c2"/>
+          <rect x="195" y="123" width="14" height="32" rx="7" fill="#f9b4c2"/>
+          <path class="head-petal" d="M118 62 q8 -12 16 0 q-8 8 -16 0Z" fill="#ffc8d8"/>
+          <path class="head-petal" d="M146 74 q8 -12 16 0 q-8 8 -16 0Z" fill="#ffb7cd"/>
+          <path class="head-petal" d="M96 82 q8 -12 16 0 q-8 8 -16 0Z" fill="#ffd6e2"/>
+        </g>
+        <g class="scat-zzz" fill="#fffaf1" font-family="Fredoka, sans-serif" font-weight="600">
+          <text x="206" y="82" font-size="26">z</text><text x="224" y="58" font-size="20">z</text><text x="238" y="38" font-size="15">z</text>
+        </g>
+      </svg>
+      <div class="pets" id="sPets"></div>
+    </div>
+
+    <div class="s-np glass">
+      <div class="s-np-top">
+        <span class="s-disc"></span>
+        <div style="min-width:0">
+          <small id="sEyebrow">Now playing</small>
+          <b id="sTitle">The studio is quiet…</b>
+          <em id="sSub"></em>
+        </div>
+      </div>
+      <div class="progress"><span id="sCur">0:00</span><div class="bar"><i id="sBar"></i></div><span id="sDur">--:--</span></div>
+      <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <div class="s-controls" id="sControls">
+      <button class="s-btn" id="sLoop" title="Repeat this song for everyone in the room">🔁 Loop: off</button>
+      <button class="s-btn" id="sSound" title="Play the current song on this page too (skip if you are in the voice room)">🔇 Sound</button>
+      <button class="s-btn" id="sGust" title="Blow the petals">🍃 Gust</button>
+      <button class="s-btn" id="sFmt" title="12 / 24 hour clock">🕒 24h</button>
+      <button class="s-btn" id="sAuto" title="Open the screensaver automatically when idle">💤 Auto: on</button>
+      <button class="s-btn" id="sFull" title="Fullscreen">⛶</button>
+      <button class="s-btn close" id="sClose" title="Close (Esc)">✕</button>
+    </div>
+    <div class="s-hint">Tap the cat 🐱 · tap the sky 🌸 · Esc to leave</div>
+    <audio id="sAudio" preload="none"></audio>
+  </div>
+
   <div id="toasts" aria-live="polite"></div>
   <audio id="preview" preload="none"></audio>
   <script src="/app.js"></script>
+  <script src="/saver.js"></script>
 </body>
 </html>

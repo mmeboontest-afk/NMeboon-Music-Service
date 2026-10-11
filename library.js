@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { ChannelType } from 'discord.js';
+import { parseBuffer } from 'music-metadata';
 import { config } from './config.js';
 
 const AUDIO_EXT = /\.(mp3|wav|ogg|oga|opus|flac|m4a|aac|webm|mka|wma)$/i;
@@ -24,10 +25,27 @@ export function guessMime(filename = '') {
   return MIME_BY_EXT[ext] || 'audio/mpeg';
 }
 
+// Discord strips non-ASCII letters from file names (e.g. Japanese). What is left is often
+// empty or a random hex id, so such names are not shown as song titles.
+function isBadName(name) {
+  const n = (name || '').trim();
+  return !n || /^[0-9a-f]{10,}$/i.test(n) || /^(unknown|untitled|file|audio)$/i.test(n);
+}
+
+// Optional: the uploader can type the song title as the message text (single file per message)
+function textTitle(message, audioCount) {
+  if (audioCount !== 1) return null;
+  const line = (message.content || '')
+    .split('\n')[0]
+    .replace(/<[^>]+>|https?:\/\/\S+/g, '')
+    .trim();
+  return line && line.length <= 100 ? line : null;
+}
+
 function cleanTitle(filename) {
   return (
     filename
-      .replace(/\.[a-z0-9]{2,5}$/i, '')
+      .replace(AUDIO_EXT, '')
       .replace(/[_]+/g, ' ')
       .replace(/\s{2,}/g, ' ')
       .trim() || filename
@@ -46,6 +64,10 @@ export class Library extends EventEmitter {
     this.channels = new Map(); // id -> { id, name, position }
     this.scanning = false;
     this.ready = false;
+    this.meta = new Map(); // track id -> title read from the file's own tags
+    this.metaTried = new Set();
+    this.enriching = false;
+    this.sampleLogged = 0;
   }
 
   inCategory(channel) {
@@ -56,10 +78,35 @@ export class Library extends EventEmitter {
     return c && (c.type === ChannelType.GuildText || c.type === ChannelType.GuildAnnouncement);
   }
 
-  #trackFrom(message, att, channel) {
+  #trackFrom(message, att, channel, audioCount = 1) {
+    const id = `${message.id}-${att.id}`;
+    const attTitle = typeof att.title === 'string' ? att.title.trim() : '';
+    const fromName = cleanTitle(att.name || '');
+    const fromText = textTitle(message, audioCount);
+    let title;
+    let titleSource;
+    if (attTitle && !isBadName(cleanTitle(attTitle))) {
+      title = cleanTitle(attTitle);
+      titleSource = 'discord';
+    } else if (fromText) {
+      title = fromText;
+      titleSource = 'text';
+    } else if (!isBadName(fromName)) {
+      title = fromName;
+      titleSource = 'filename';
+    } else {
+      title = `Untitled track (${(att.size / 1048576).toFixed(2)} MB)`;
+      titleSource = 'none';
+    }
+    const cached = this.meta.get(id);
+    if (cached && (titleSource === 'filename' || titleSource === 'none')) {
+      title = cached;
+      titleSource = 'tag';
+    }
     return {
-      id: `${message.id}-${att.id}`,
-      title: cleanTitle(att.name || 'Untitled'),
+      id,
+      title,
+      titleSource,
       filename: att.name,
       channelId: channel.id,
       channelName: channel.name,
@@ -75,9 +122,13 @@ export class Library extends EventEmitter {
 
   #collect(message, channel, into) {
     const found = [];
-    for (const att of message.attachments.values()) {
-      if (!isAudio(att)) continue;
-      const t = this.#trackFrom(message, att, channel);
+    const audio = [...message.attachments.values()].filter(isAudio);
+    for (const att of audio) {
+      if (this.sampleLogged < 3) {
+        this.sampleLogged++;
+        console.log(`[library] sample attachment: name="${att.name}" title="${att.title ?? ''}"`);
+      }
+      const t = this.#trackFrom(message, att, channel, audio.length);
       into.set(t.id, t);
       found.push(t);
     }
@@ -159,6 +210,7 @@ export class Library extends EventEmitter {
       this.ready = true;
       console.log(`[library] ${tracks.size} tracks in ${channels.size} channels`);
       this.emit('update');
+      this.enrich();
     } catch (e) {
       console.error('[library] scan failed:', e.message);
     } finally {
@@ -180,6 +232,7 @@ export class Library extends EventEmitter {
     const found = this.#collect(message, channel, this.tracks);
     if (!found.length) return;
     this.emit('update');
+    this.enrich();
     if (live) for (const t of found) this.emit('newtrack', t);
   }
 
@@ -192,6 +245,54 @@ export class Library extends EventEmitter {
       }
     }
     if (changed) this.emit('update');
+  }
+
+  // Read titles from the ID3/tag data inside the audio file (only for tracks with no usable name)
+  async enrich() {
+    if (this.enriching) return;
+    this.enriching = true;
+    try {
+      const todo = [...this.tracks.values()].filter(
+        (t) => (t.titleSource === 'filename' || t.titleSource === 'none') && !this.metaTried.has(t.id),
+      );
+      let changed = false;
+      let i = 0;
+      const worker = async () => {
+        while (i < todo.length) {
+          const t = todo[i++];
+          this.metaTried.add(t.id);
+          const name = await this.#probeTag(t);
+          if (!name) continue;
+          this.meta.set(t.id, name);
+          const cur = this.tracks.get(t.id);
+          if (cur) {
+            cur.title = name;
+            cur.titleSource = 'tag';
+            changed = true;
+          }
+        }
+      };
+      await Promise.all([worker(), worker(), worker()]);
+      if (changed) this.emit('update');
+    } finally {
+      this.enriching = false;
+    }
+  }
+
+  async #probeTag(track) {
+    try {
+      const url = await this.freshUrl(track);
+      const res = await fetch(url, { headers: { Range: 'bytes=0-524287' } });
+      if (!res.ok) return null;
+      const buf = new Uint8Array(await res.arrayBuffer());
+      const meta = await parseBuffer(buf, { mimeType: track.contentType, size: track.size }, { duration: false, skipCovers: true });
+      const title = meta.common?.title?.trim();
+      if (!title) return null;
+      const artist = meta.common?.artist?.trim();
+      return artist ? `${artist} \u2014 ${title}` : title;
+    } catch {
+      return null;
+    }
   }
 
   async freshUrl(track) {
