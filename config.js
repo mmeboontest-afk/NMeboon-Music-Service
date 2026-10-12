@@ -26,6 +26,16 @@ export const config = {
   rateLimitCount: num(process.env.RATE_LIMIT_COUNT, 4),
   rateLimitWindowSec: num(process.env.RATE_LIMIT_WINDOW_SEC, 30),
 
+  // ---- Live overlay / control ----
+  liveFolderId: process.env.LIVE_FOLDER_ID || '1558768008124702760', // videos / images / audio used on stream
+  liveStorageId: process.env.LIVE_STORAGE_ID || '1558768054400196618', // where each live's stats are saved
+  controlPin: process.env.CONTROL_PIN || '',
+  liveSecret: process.env.LIVE_SECRET || '',
+  ytApiKey: process.env.YT_API_KEY || '',
+  ytVideoId: process.env.YT_VIDEO_ID || '',
+  ytMinPollMs: num(process.env.YT_MIN_POLL_MS, 8000),
+  ytStatsSec: num(process.env.YT_STATS_SEC, 45),
+
   // Presence (English only)
   presenceStatus: process.env.PRESENCE_STATUS || 'dnd', // dnd = Do Not Disturb
   idleActivity: process.env.IDLE_ACTIVITY || 'Nodistub Cat Cafe | Request on web',

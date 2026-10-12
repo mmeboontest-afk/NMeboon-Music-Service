@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nodistub Cat Cafe · Live Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&family=Pacifico&family=Mali:wght@500;700&family=Sriracha&family=Kanit:wght@500;700&family=Prompt:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&family=DotGothic16&family=Press+Start+2P&family=Caveat:wght@600;700&family=Bangers&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/Live/overlay.css" />
+</head>
+<body>
+  <div id="stage">
+    <!-- soft sky used by Starting / BRB / Ending scenes -->
+    <div id="bg">
+      <div class="sky"></div>
+      <div class="orb" id="orb"></div>
+      <div class="clouds" id="clouds"></div>
+      <svg class="hills" viewBox="0 0 1440 400" preserveAspectRatio="none">
+        <path d="M0 150 C180 60 340 70 520 140 C720 215 860 90 1060 100 C1250 110 1350 150 1440 120 L1440 400 L0 400 Z"/>
+        <path d="M0 230 C200 160 380 180 560 230 C760 285 940 190 1130 215 C1290 235 1380 260 1440 230 L1440 400 L0 400 Z"/>
+        <path d="M0 320 C240 270 420 300 640 330 C860 360 1060 290 1240 305 C1340 313 1400 330 1440 322 L1440 400 L0 400 Z"/>
+      </svg>
+      <div class="stars" id="stars"></div>
+    </div>
+    <canvas id="petals" width="1920" height="1080"></canvas>
+
+    <!-- ===== Scene: starting soon ===== -->
+    <section class="scene" id="sc-prep">
+      <video id="prepVideo" playsinline loop muted></video>
+      <div class="prep-card" id="prepCard">
+        <div class="mini-cat" aria-hidden="true">🐱</div>
+        <h1 id="prepTitle">Starting soon</h1>
+        <p id="prepSub"></p>
+        <div class="prep-clock"><span id="prepTime">--:--</span><em id="prepCount"></em></div>
+      </div>
+    </section>
+
+    <!-- ===== Scene: live (transparent HUD) ===== -->
+    <section class="scene" id="sc-live">
+      <div id="topbar">
+        <div class="brand glass"><span class="live-dot"></span><b>LIVE</b><span id="elapsed">00:00:00</span><span class="sep"></span><span id="liveTitle" class="ttl"></span></div>
+        <div id="stats">
+          <div class="chip glass" id="chipViewers"><i>👀</i><b id="stViewers">–</b></div>
+          <div class="chip glass" id="chipSubs"><i>💗</i><b id="stSubs">–</b></div>
+          <div class="chip glass" id="chipChat"><i>💬</i><b id="stChat">0</b></div>
+          <div class="chip glass money" id="chipMoney"><i>💰</i><b id="stMoney">0</b></div>
+          <div class="chip glass clockchip" id="chipClock"><b id="clockTime">--:--</b></div>
+        </div>
+      </div>
+
+      <div id="np" class="glass"><span class="disc"></span><div><small>Now playing</small><b id="npTitle">—</b></div><div class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+
+      <div id="chat"></div>
+
+      <div id="mascot">
+        <div class="bubble" id="mBubble"></div>
+        <svg viewBox="0 0 260 260" aria-hidden="true">
+          <g class="m-tail"><path d="M188 232 C246 232 256 168 228 150" fill="none" stroke="#e8a45a" stroke-width="18" stroke-linecap="round"/></g>
+          <ellipse cx="130" cy="222" rx="72" ry="42" fill="#f2b36b"/>
+          <ellipse cx="100" cy="250" rx="19" ry="10" fill="#f7c58d"/><ellipse cx="160" cy="250" rx="19" ry="10" fill="#f7c58d"/>
+          <g class="m-head">
+            <path d="M66 100 L72 34 L116 70 Z" fill="#f2b36b"/><path d="M194 100 L188 34 L144 70 Z" fill="#f2b36b"/>
+            <path d="M78 86 L80 52 L102 72 Z" fill="#f4a9b5"/><path d="M180 86 L178 52 L156 72 Z" fill="#f4a9b5"/>
+            <circle cx="130" cy="130" r="66" fill="#f6c07e"/>
+            <path d="M130 66 v17 M113 70 l4 14 M147 70 l-4 14" stroke="#e39a4f" stroke-width="6" stroke-linecap="round"/>
+            <g class="m-eyes"><ellipse cx="104" cy="130" rx="7.5" ry="10" fill="#4a2c1d"/><ellipse cx="156" cy="130" rx="7.5" ry="10" fill="#4a2c1d"/><circle cx="106.5" cy="126" r="2.6" fill="#fff"/><circle cx="158.5" cy="126" r="2.6" fill="#fff"/></g>
+            <g class="m-happy" fill="none" stroke="#4a2c1d" stroke-width="4.5" stroke-linecap="round"><path d="M94 134 q10 -14 20 0"/><path d="M146 134 q10 -14 20 0"/></g>
+            <path d="M123 146 h14 l-7 8 Z" fill="#e8798f"/>
+            <path d="M130 154 v4 M130 158 q-8 8 -16 3 M130 158 q8 8 16 3" fill="none" stroke="#7a4a33" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="84" cy="150" r="9" fill="#f4a9b5" opacity=".55"/><circle cx="176" cy="150" r="9" fill="#f4a9b5" opacity=".55"/>
+            <path d="M76 146 l-24 -5 M76 154 l-24 5 M184 146 l24 -5 M184 154 l24 5" stroke="#7a4a33" stroke-width="2.2" stroke-linecap="round" opacity=".6"/>
+            <path d="M60 134 A70 74 0 0 1 200 134" fill="none" stroke="#5a3b2a" stroke-width="10" stroke-linecap="round"/>
+            <rect x="44" y="114" width="28" height="50" rx="14" fill="#e8798f"/><rect x="188" y="114" width="28" height="50" rx="14" fill="#e8798f"/>
+            <rect x="51" y="123" width="14" height="32" rx="7" fill="#f9b4c2"/><rect x="195" y="123" width="14" height="32" rx="7" fill="#f9b4c2"/>
+          </g>
+          <g class="m-zzz" fill="#fffaf1" font-family="Fredoka, sans-serif" font-weight="600"><text x="206" y="82" font-size="26">z</text><text x="224" y="58" font-size="20">z</text><text x="238" y="38" font-size="15">z</text></g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ===== Scene: be right back ===== -->
+    <section class="scene" id="sc-brb">
+      <div class="center-card">
+        <div class="big-cat">😺</div>
+        <h1>Be right back</h1>
+        <p>The cat DJ is refilling the milk tea…</p>
+        <div class="prep-clock"><span id="brbTime">--:--</span></div>
+      </div>
+    </section>
+
+    <!-- ===== Scene: ending / recap ===== -->
+    <section class="scene" id="sc-end">
+      <div class="center-card wide">
+        <div class="big-cat">🌸</div>
+        <h1>Thanks for watching!</h1>
+        <p id="endTitle"></p>
+        <div class="recap" id="recap"></div>
+        <div class="tops" id="endTops"></div>
+      </div>
+    </section>
+
+    <!-- ===== Layers that float above every scene ===== -->
+    <div id="pin"></div>
+    <div id="alert"></div>
+    <div id="cap"></div>
+    <div id="clip"></div>
+    <div id="notice" class="glass" hidden></div>
+    <button id="audioPill" hidden>🔊 Click once to enable sound</button>
+
+    <!-- scene change: your Translation.mp4 (or a built-in sakura wipe) -->
+    <div id="xition">
+      <video id="xVideo" playsinline muted preload="auto"></video>
+      <div id="xWipe"><i></i><i></i><i></i><span>🌸</span></div>
+    </div>
+  </div>
+  <audio id="bgm" preload="auto"></audio>
+  <script src="/Live/overlay.js"></script>
+</body>
+</html>

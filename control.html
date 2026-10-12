@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Nodistub Cat Cafe · Live Control</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎀</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&family=Pacifico&family=Mali:wght@500;700&family=Sriracha&family=Kanit:wght@500;700&family=Prompt:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&family=DotGothic16&family=Press+Start+2P&family=Caveat:wght@600;700&family=Bangers&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/Live/control.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><div class="window-light"></div></div>
+
+  <!-- ===================== PIN GATE ===================== -->
+  <div id="gate" class="gate" hidden>
+    <form class="card gate-card" id="gateForm" autocomplete="off">
+      <div class="gate-cat">🐱</div>
+      <h1>Live Control</h1>
+      <p id="gateMsg">Enter the PIN to open the control room.</p>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN" maxlength="64" />
+      <button class="btn add" type="submit">Unlock 🔓</button>
+      <p class="err" id="gateErr"></p>
+    </form>
+  </div>
+
+  <!-- ===================== CONTROL ROOM ===================== -->
+  <div id="app" hidden>
+    <header class="top">
+      <div class="brand"><span class="brand-paw">🎀</span><div><h1>Live Control</h1><p>Nodistub Cat Cafe · overlay <code>/overlay</code></p></div></div>
+      <div class="top-right">
+        <span class="pill" id="pConn"><i class="dot"></i><span>Connecting…</span></span>
+        <span class="pill" id="pLive"><i class="dot"></i><span>Offline</span></span>
+        <span class="pill" id="pYt"><i class="dot"></i><span>YouTube</span></span>
+        <button class="btn ghost" id="btnLogout" type="button">Lock 🔒</button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="live">🎬 Live</button>
+      <button class="tab" data-tab="say">💬 Say</button>
+      <button class="tab" data-tab="tts">🗣️ Chat &amp; TTS</button>
+      <button class="tab" data-tab="alerts">💰 Alerts</button>
+      <button class="tab" data-tab="music">🎵 Music</button>
+      <button class="tab" data-tab="media">🎞️ Media</button>
+      <button class="tab" data-tab="yt">▶️ YouTube</button>
+      <button class="tab" data-tab="stats">📊 Stats</button>
+      <button class="tab" data-tab="look">🎨 Look</button>
+    </nav>
+
+    <main>
+      <!-- ============ LIVE ============ -->
+      <section class="panel active" data-panel="live">
+        <div class="cols">
+          <div class="card">
+            <h3>Go live</h3>
+            <label class="f">Live title <input id="liveTitleIn" maxlength="120" placeholder="e.g. Cozy cat cafe stream 🐾" /></label>
+            <label class="f">YouTube link / video ID <input id="liveVideoIn" placeholder="https://youtube.com/watch?v=… (optional now, can add later)" /></label>
+            <div class="row">
+              <button class="btn add" id="btnStart">▶ Start live</button>
+              <button class="btn ready" id="btnReady">✨ I’m ready — show screen</button>
+              <button class="btn ghost" id="btnBrb">☕ BRB</button>
+              <button class="btn danger" id="btnEnd">⏹ End live &amp; save</button>
+            </div>
+            <p class="hint" id="liveHint">Start live → the starting-soon video plays. Press “I’m ready” to run the transition and show the stream screen.</p>
+          </div>
+
+          <div class="card">
+            <h3>Scene</h3>
+            <div class="scenes" id="sceneBtns">
+              <button class="scn" data-scene="prep">🌸<span>Starting soon</span></button>
+              <button class="scn" data-scene="live">🎥<span>Live screen</span></button>
+              <button class="scn" data-scene="brb">☕<span>Be right back</span></button>
+              <button class="scn" data-scene="ending">💌<span>Ending</span></button>
+              <button class="scn" data-scene="off">🫥<span>Hide all</span></button>
+            </div>
+            <label class="chk"><input type="checkbox" id="useTransition" checked /> Play transition video when switching</label>
+            <div class="row">
+              <button class="btn ghost" data-cmd='{"type":"test-transition"}'>Test transition</button>
+              <label class="f inline">Countdown (min) <input id="cdMin" type="number" min="0" max="240" value="5" style="width:80px" /></label>
+              <button class="btn ghost" id="btnCd">Start countdown</button>
+              <button class="btn ghost" data-cmd='{"type":"prep-countdown","minutes":0}'>Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="statGrid"></div>
+
+        <div class="cols">
+          <div class="card">
+            <h3>Chat <small>click a message to act on it</small></h3>
+            <div class="row"><button class="btn ghost sm" data-cmd='{"type":"test","kind":"chat"}'>+ Test chat</button><button class="btn ghost sm" data-cmd='{"type":"chat-clear"}'>Clear overlay chat</button><button class="btn ghost sm" data-cmd='{"type":"chat-pin"}'>Unpin</button></div>
+            <ul class="chatlist" id="chatList"></ul>
+            <p class="empty" id="chatEmpty">No messages yet. Connect YouTube, or press “Test chat”.</p>
+          </div>
+          <div class="card">
+            <h3>Activity</h3>
+            <ul class="log" id="logList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SAY ============ -->
+      <section class="panel" data-panel="say">
+        <div class="cols">
+          <div class="card">
+            <h3>Say something on stream</h3>
+            <label class="f">What do you want to say?
+              <textarea id="sayText" rows="3" maxlength="300" placeholder="Welcome to the cat cafe! 🐱☕"></textarea>
+            </label>
+            <div class="row">
+              <button class="btn add" id="sayBoth">📺🗣️ Show + speak</button>
+              <button class="btn ghost" id="sayText1">📺 Show text only (silent)</button>
+              <button class="btn ghost" id="saySpeak">🗣️ Speak only</button>
+              <button class="btn ghost" data-cmd='{"type":"caption-clear"}'>Hide text</button>
+              <button class="btn ghost" data-cmd='{"type":"tts-stop"}'>🔇 Stop voice</button>
+            </div>
+            <div class="grid2">
+              <label class="f">Font <select id="sayFont"></select></label>
+              <label class="f">Animation
+                <select id="sayAnim"><option value="pop">Pop</option><option value="typewriter">Typewriter</option><option value="wave">Wave letters</option><option value="bounce">Bounce letters</option><option value="fade">Soft fade</option></select>
+              </label>
+              <label class="f">Position
+                <select id="sayPos"><option value="bottom">Bottom</option><option value="middle">Middle</option><option value="top">Top</option></select>
+              </label>
+              <label class="f">Stay for (seconds, 0 = until hidden) <input id="sayHold" type="number" min="0" max="120" /></label>
+              <label class="f">Size <input id="saySize" type="range" min="28" max="160" /><output id="saySizeO"></output></label>
+              <label class="f">Colors <span class="colors"><input id="sayColor" type="color" /> text <input id="sayStroke" type="color" /> outline</span></label>
+            </div>
+            <div class="row"><button class="btn ghost sm" id="sayDefault">Save this style as default</button><button class="btn ghost sm" id="sayPhrase">★ Save phrase</button></div>
+          </div>
+          <div class="card">
+            <h3>Preview</h3>
+            <div class="preview" id="sayPreview">Hello, cat friends!</div>
+            <h3 style="margin-top:22px">Saved phrases</h3>
+            <ul class="phrases" id="phraseList"></ul>
+            <p class="empty" id="phraseEmpty">Save lines you use often (they stay in this browser).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TTS ============ -->
+      <section class="panel" data-panel="tts">
+        <div class="cols">
+          <div class="card">
+            <h3>Voice</h3>
+            <label class="f">Who speaks?
+              <select data-path="tts.output"><option value="overlay">The overlay (OBS) speaks</option><option value="control">This control page speaks</option><option value="off">Voice off</option></select>
+            </label>
+            <p class="hint">OBS’s browser sometimes has no voices. If you hear nothing from the overlay, choose “This control page” and capture this browser’s audio in OBS.</p>
+            <label class="f">Voice (voices of <b>this</b> browser) <select id="voiceSel"></select></label>
+            <label class="f">Language <select data-path="tts.lang"><option value="auto">Auto-detect (Thai / Japanese / English…)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="th-TH">Thai</option><option value="ja-JP">Japanese</option><option value="ko-KR">Korean</option><option value="zh-CN">Chinese</option></select></label>
+            <div class="grid2">
+              <label class="f">Speed <input type="range" data-path="tts.rate" min="0.5" max="2" step="0.05" /><output></output></label>
+              <label class="f">Pitch <input type="range" data-path="tts.pitch" min="0" max="2" step="0.05" /><output></output></label>
+              <label class="f">Volume <input type="range" data-path="tts.volume" min="0" max="1" step="0.05" /><output></output></label>
+            </div>
+            <label class="chk"><input type="checkbox" data-path="tts.duck" /> Lower the music while the voice speaks</label>
+            <div class="row"><button class="btn add" id="ttsTest">🔊 Test here</button><button class="btn ghost" id="ttsTestOverlay">Test on overlay</button></div>
+          </div>
+          <div class="card">
+            <h3>Read chat aloud</h3>
+            <label class="f">Which messages?
+              <select data-path="tts.readChat"><option value="off">None</option><option value="all">Everyone</option><option value="members">Members, mods &amp; owner only</option><option value="superchats">Only Super Chats (below)</option></select>
+            </label>
+            <label class="chk"><input type="checkbox" data-path="tts.readSuper" /> Read Super Chats, stickers &amp; new members aloud</label>
+            <label class="chk"><input type="checkbox" data-path="tts.prefixName" /> Say the name first (“Mochi says …”)</label>
+            <label class="chk"><input type="checkbox" data-path="tts.skipLinks" /> Skip links</label>
+            <label class="chk"><input type="checkbox" data-path="tts.skipCommands" /> Skip messages that start with “!”</label>
+            <div class="grid2">
+              <label class="f">Max characters <input type="number" data-path="tts.maxLen" min="20" max="300" /></label>
+              <label class="f">Pause between chat voices (ms) <input type="number" data-path="tts.cooldownMs" min="0" max="30000" step="500" /></label>
+            </div>
+            <label class="f">Blocked words (comma separated) <textarea data-path="tts.blockWords" data-list rows="2" placeholder="word1, word2"></textarea></label>
+            <label class="f">Muted people (names, comma separated) <textarea data-path="tts.blockedUsers" data-list rows="2"></textarea></label>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Chat on screen</h3>
+          <div class="grid4">
+            <label class="f">Side <select data-path="chat.side"><option value="left">Left</option><option value="right">Right</option></select></label>
+            <label class="f">Messages shown <input type="number" data-path="chat.max" min="3" max="14" /></label>
+            <label class="f">Text size <input type="number" data-path="chat.size" min="16" max="44" /></label>
+            <label class="f">Fade after (sec, 0 = never) <input type="number" data-path="chat.fadeSec" min="0" max="600" /></label>
+          </div>
+          <label class="chk"><input type="checkbox" data-path="chat.hideCommands" /> Hide messages that start with “!”</label>
+        </div>
+      </section>
+
+      <!-- ============ ALERTS ============ -->
+      <section class="panel" data-panel="alerts">
+        <div class="cols">
+          <div class="card">
+            <h3>Super Chat timer</h3>
+            <p class="hint">Each Super Chat card shows with a countdown. Longer for bigger tiers (like YouTube’s pin time).</p>
+            <div class="grid2">
+              <label class="f">Base seconds <input type="number" data-path="alerts.baseSec" min="3" max="60" /></label>
+              <label class="f">+ seconds per tier <input type="number" data-path="alerts.perTierSec" min="0" max="30" /></label>
+              <label class="f">Longest allowed (sec) <input type="number" data-path="alerts.maxSec" min="5" max="180" /></label>
+            </div>
+            <label class="chk"><input type="checkbox" data-path="alerts.sound" /> Soft chime sound</label>
+            <label class="chk"><input type="checkbox" data-path="alerts.memberAlerts" /> Alerts for new members, milestones &amp; gifts</label>
+            <div class="row"><span class="badge" id="alertWait">0 waiting</span><button class="btn ghost" data-cmd='{"type":"skip-alert"}'>⏭ Skip current alert</button></div>
+          </div>
+          <div class="card">
+            <h3>Test alerts <small>test ones are not counted in your money total</small></h3>
+            <div class="grid2">
+              <label class="f">Name <input id="tName" placeholder="Mochi" /></label>
+              <label class="f">Message <input id="tText" placeholder="Love the stream! 💖" /></label>
+              <label class="f">Amount <input id="tValue" type="number" min="1" value="20" /></label>
+              <label class="f">Currency <input id="tCur" value="USD" maxlength="4" /></label>
+              <label class="f">Tier (1–11, higher = longer) <input id="tTier" type="number" min="1" max="11" value="5" /></label>
+            </div>
+            <div class="row">
+              <button class="btn add" id="tSuper">💰 Super Chat</button>
+              <button class="btn ghost" id="tSticker">🎟️ Sticker</button>
+              <button class="btn ghost" id="tMember">⭐ New member</button>
+              <button class="btn ghost" id="tMile">🎉 Milestone</button>
+              <button class="btn ghost" id="tGift">🎁 Gift</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MUSIC ============ -->
+      <section class="panel" data-panel="music">
+        <div class="cols">
+          <div class="card">
+            <h3>Background music <small id="trackCount"></small></h3>
+            <div class="np-box"><span class="disc"></span><div><small id="mState">Stopped</small><b id="mTitle">—</b></div></div>
+            <div class="row">
+              <button class="btn add" data-cmd='{"type":"music","action":"play"}'>▶ Play</button>
+              <button class="btn ghost" data-cmd='{"type":"music","action":"pause"}'>⏸ Pause</button>
+              <button class="btn ghost" data-cmd='{"type":"music","action":"next"}'>⏭ Next</button>
+              <button class="btn ghost" data-cmd='{"type":"music","action":"stop"}'>⏹ Stop</button>
+            </div>
+            <label class="f">Volume <input type="range" data-path="music.volume" min="0" max="1" step="0.01" /><output></output></label>
+            <label class="chk"><input type="checkbox" data-path="music.shuffle" /> Shuffle</label>
+            <label class="chk"><input type="checkbox" data-path="music.loop" /> Loop the current song</label>
+            <label class="chk"><input type="checkbox" data-path="music.autoStart" /> Start music when I press “Start live”</label>
+            <label class="f">Songs from
+              <select data-path="music.source"><option value="all">Music category + Live folder</option><option value="music">Music category only</option><option value="live">Live folder only</option></select>
+            </label>
+            <h3 style="margin-top:18px">Queue <small id="queueN"></small></h3>
+            <ol class="mini" id="mQueue"></ol>
+            <button class="btn ghost sm" data-cmd='{"type":"music","action":"queue-clear"}'>Clear queue</button>
+          </div>
+          <div class="card">
+            <h3>Pick a song</h3>
+            <input id="trackSearch" type="search" placeholder="Search songs…" />
+            <ul class="tracklist" id="trackList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MEDIA ============ -->
+      <section class="panel" data-panel="media">
+        <div class="cols">
+          <div class="card">
+            <h3>Starting-soon video</h3>
+            <p class="hint">Detected file: <b id="roleprep">none</b>. Name it <code>setlivescreen.mp4</code> in the Live folder, or pick one below. For a see-through background use <code>.webm</code> with alpha (mp4 can’t be transparent).</p>
+            <label class="chk"><input type="checkbox" data-path="prep.enabled" /> Show this video in the starting-soon scene</label>
+            <label class="f">Blend mode <select data-path="prep.blend"><option value="normal">Normal</option><option value="screen">Screen (black becomes see-through)</option><option value="lighten">Lighten</option><option value="multiply">Multiply (white becomes see-through)</option></select></label>
+            <label class="f">Fallback title <input data-path="prep.title" maxlength="60" /></label>
+            <label class="f">Fallback subtitle <input data-path="prep.subtitle" maxlength="120" /></label>
+          </div>
+          <div class="card">
+            <h3>Scene transition</h3>
+            <p class="hint">Detected file: <b id="roletransition">none</b>. Name it <code>Translation.mp4</code> (or <code>Transition.mp4</code>). It plays over the screen whenever the scene changes; without a file you get a sakura wipe.</p>
+            <label class="chk"><input type="checkbox" data-path="transition.enabled" /> Transitions on</label>
+            <label class="chk"><input type="checkbox" data-path="transition.muted" /> Mute the transition video</label>
+            <label class="f">Switch scene at (ms, 0 = middle of the video) <input type="number" data-path="transition.cutMs" min="0" max="20000" step="100" /></label>
+            <button class="btn ghost" data-cmd='{"type":"test-transition"}'>Test transition</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Live folder files <small id="storageName"></small></h3>
+          <div class="row"><button class="btn ghost sm" data-cmd='{"type":"rescan-media"}'>↻ Rescan Discord folder</button><button class="btn ghost sm" data-cmd='{"type":"media-hide"}'>Hide clip on stream</button><label class="f inline">Show for (sec, 0 = until it ends) <input id="clipSec" type="number" min="0" value="0" style="width:80px" /></label><label class="chk inline"><input type="checkbox" id="clipFull" /> Full screen</label><label class="chk inline"><input type="checkbox" id="clipLoop" /> Loop</label></div>
+          <ul class="medialist" id="mediaList"></ul>
+          <p class="empty" id="mediaEmpty">No files found. Upload videos / images / audio to the Live folder channel on Discord.</p>
+        </div>
+      </section>
+
+      <!-- ============ YOUTUBE ============ -->
+      <section class="panel" data-panel="yt">
+        <div class="cols">
+          <div class="card">
+            <h3>YouTube connection</h3>
+            <p class="hint">Uses the YouTube Data API v3 with the server’s <code>YT_API_KEY</code>. Paste your <b>live stream link</b> (public or unlisted) to read chat, Super Chats and numbers.</p>
+            <p>API key on server: <span class="badge" id="keyBadge">?</span></p>
+            <label class="f">Live link / video ID <input id="ytInput" placeholder="https://www.youtube.com/watch?v=…" /></label>
+            <div class="row"><button class="btn add" id="ytConnect">Connect</button><button class="btn ghost" data-cmd='{"type":"yt-disconnect"}'>Disconnect</button></div>
+            <p class="status" id="ytStatus"></p>
+          </div>
+          <div class="card">
+            <h3>Quota</h3>
+            <p>Used by this server today: <b id="quotaUsed">0</b> / 10,000 units <small>(estimate, default free quota)</small></p>
+            <div class="bar"><i id="quotaBar"></i></div>
+            <p class="hint">Reading chat costs 5 units per check. At one check every <b id="pollMs">8</b>s that is about <b id="quotaHr">–</b> units per hour. If you stream longer, raise <code>YT_MIN_POLL_MS</code> on the server (e.g. 15000) or ask Google for more quota.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ STATS ============ -->
+      <section class="panel" data-panel="stats">
+        <div class="stat-grid" id="totalGrid"></div>
+        <div class="card">
+          <h3>Past lives <small id="storageName2"></small></h3>
+          <div class="row"><button class="btn ghost sm" data-cmd='{"type":"save-now"}'>💾 Save current live now</button></div>
+          <div class="tablewrap"><table class="tbl" id="histTable"><thead><tr><th>Date</th><th>Title</th><th>Length</th><th>Peak</th><th>Avg</th><th>Subs</th><th>Views</th><th>Comments</th><th>Super Chat</th></tr></thead><tbody></tbody></table></div>
+          <p class="empty" id="histEmpty">No finished lives yet. Numbers are saved to the Discord storage channel when you press “End live &amp; save”.</p>
+        </div>
+      </section>
+
+      <!-- ============ LOOK ============ -->
+      <section class="panel" data-panel="look">
+        <div class="cols">
+          <div class="card">
+            <h3>Show / hide on the live screen</h3>
+            <label class="chk"><input type="checkbox" data-path="widgets.topBar" /> Top bar (LIVE badge, numbers)</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.stats" /> Viewer / subscriber / comment / money chips</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.clock" /> Clock</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.chat" /> Chat</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.nowPlaying" /> Now-playing card</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.mascot" /> Cat mascot</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.captions" /> Text captions</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.alerts" /> Super Chat alerts</label>
+            <label class="chk"><input type="checkbox" data-path="widgets.petals" /> Falling sakura petals</label>
+          </div>
+          <div class="card">
+            <h3>Sky (starting / BRB / ending scenes)</h3>
+            <label class="f">Theme <select data-path="theme.sky"><option value="auto">Follow the time of day</option><option value="day">Sunny day</option><option value="sunset">Sunset</option><option value="night">Starry night</option></select></label>
+            <h3 style="margin-top:20px">Add to OBS</h3>
+            <ol class="mini">
+              <li>Add a <b>Browser</b> source, URL: <code id="ovUrl"></code></li>
+              <li>Width <b>1920</b>, height <b>1080</b>. Leave the custom CSS empty (the page is already transparent).</li>
+              <li>Tick “Control audio via OBS” if you want the music/voice on its own audio track.</li>
+              <li>Open <code>/overlay?bg=1</code> in a normal browser tab to preview on a dark checker background.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toasts" aria-live="polite"></div>
+  <script src="/Live/control.js"></script>
+</body>
+</html>

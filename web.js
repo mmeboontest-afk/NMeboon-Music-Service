@@ -4,19 +4,21 @@ import { Readable } from 'node:stream';
 import express from 'express';
 import { config } from './config.js';
 import { guessMime } from './library.js';
+import { mountLive } from './liveweb.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export function startWeb({ library, player, stats }) {
+export function startWeb({ library, player, stats, live }) {
   const app = express();
   if (config.trustProxy) app.set('trust proxy', true);
   app.disable('x-powered-by');
   app.get('/healthz', (_req, res) => res.json({ ok: true }));
-  app.use(express.json({ limit: '4kb' }));
-  // Flat layout: the website files sit next to this file
+  app.use(express.json({ limit: '64kb' }));
+  // Flat layout: the website files sit next to this file. The music site lives at /Music
   const sendWeb = (file) => (_req, res) => res.sendFile(path.join(__dirname, file));
-  app.get('/', sendWeb('index.html'));
-  for (const f of ['index.html', 'style.css', 'app.js', 'saver.css', 'saver.js']) app.get('/' + f, sendWeb(f));
+  app.get('/', (_req, res) => res.redirect('/Music'));
+  app.get(['/Music', '/Music/', '/Music/index.html'], sendWeb('index.html'));
+  for (const f of ['style.css', 'app.js', 'saver.css', 'saver.js']) app.get('/Music/' + f, sendWeb(f));
 
   /* ----------------------------- SSE ----------------------------- */
   const clients = new Set();
@@ -162,6 +164,8 @@ export function startWeb({ library, player, stats }) {
     res.on('close', () => body.destroy());
     body.pipe(res);
   });
+
+  if (live) mountLive(app, live);
 
   const server = app.listen(config.port, () => {
     console.log(`[web] Cat Cafe is open at http://localhost:${config.port}`);

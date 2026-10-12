@@ -4,6 +4,9 @@ import { Library } from './library.js';
 import { MusicPlayer } from './player.js';
 import { Stats } from './stats.js';
 import { startWeb } from './web.js';
+import { YouTube } from './youtube.js';
+import { LiveMedia } from './livemedia.js';
+import { LiveHub } from './livehub.js';
 
 if (!config.token) {
   console.error('Missing DISCORD_TOKEN. Copy .env.example to .env and fill it in.');
@@ -24,6 +27,9 @@ const client = new Client({
 const stats = new Stats();
 const library = new Library(client);
 const player = new MusicPlayer(client, library, stats);
+const liveMedia = new LiveMedia(client);
+const yt = new YouTube({ apiKey: config.ytApiKey, minPollMs: config.ytMinPollMs, statsSec: config.ytStatsSec });
+const hub = new LiveHub({ yt, media: liveMedia, library });
 
 /* ------------------------------ presence ------------------------------ */
 
@@ -88,6 +94,8 @@ client.once(Events.ClientReady, async () => {
 
   await ensureRoomRules();
   await library.scan();
+  liveMedia.scan().then(() => hub.restore()).catch((e) => console.warn('[live] startup scan failed:', e.message));
+  setInterval(() => liveMedia.scan().catch(() => {}), 15 * 60_000);
   setInterval(() => library.scan(), config.rescanMinutes * 60_000);
 
   try {
@@ -115,10 +123,10 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
 });
 
 client.on(Events.MessageCreate, (message) => {
-  if (message.attachments.size) library.addMessage(message, { live: true });
+  if (message.attachments.size) { library.addMessage(message, { live: true }); liveMedia.addMessage(message); }
 });
 
-client.on(Events.MessageDelete, (message) => library.removeMessage(message.id));
+client.on(Events.MessageDelete, (message) => { library.removeMessage(message.id); liveMedia.removeMessage(message.id); });
 
 client.on(Events.MessageUpdate, async (_old, message) => {
   try {
@@ -142,7 +150,7 @@ client.on(Events.Error, (e) => console.error('[client]', e.message));
 process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e?.message ?? e));
 
 // Open the website right away so Render sees the port even while the bot is still logging in
-startWeb({ library, player, stats });
+startWeb({ library, player, stats, live: { hub, media: liveMedia } });
 
 client.login(config.token).catch((e) => {
   console.error('[login failed]', e.message);

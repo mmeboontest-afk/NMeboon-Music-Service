@@ -105,3 +105,22 @@ src/web.js       Express API + SSE + พรีวิวเพลง
 src/stats.js     นับจำนวนครั้งที่ถูกขอ/เล่น
 public/          หน้าเว็บ (HTML/CSS/JS)
 ```
+
+---
+
+## Live overlay (`/overlay`) and control panel (`/control-live`)
+
+The music site now lives at `/Music`.
+
+**Render env vars to add:** `CONTROL_PIN` (your PIN) and `YT_API_KEY` (YouTube Data API v3 key).
+Optional: `YT_VIDEO_ID`, `LIVE_FOLDER_ID`, `LIVE_STORAGE_ID`, `YT_MIN_POLL_MS`, `YT_STATS_SEC`, `LIVE_SECRET`.
+
+**YouTube API key:** Google Cloud Console > create project > enable "YouTube Data API v3" > Credentials > Create API key.
+Chat polling costs 5 quota units per poll (default quota 10,000/day), so the bot polls no faster than `YT_MIN_POLL_MS`.
+
+**Discord:** the bot needs View Channel, Read Message History, Send Messages, Attach Files, Embed Links in the Live folder and Live storage channels.
+Name your files: `setlivescreen.mp4` (starting-soon video) and `Translation.mp4` (transition video). Other videos, images and audio in the Live folder show up in the Media / Music tabs.
+Live storage receives a summary after every live (views, subscribers, comments, Super Chat totals) and is read back on boot.
+
+**OBS:** Add a Browser Source, URL `https://YOUR-APP.onrender.com/overlay`, 1920x1080, tick "Control audio via OBS" if you want. Open `/control-live`, enter the PIN, press Start live, then "I'm ready".
+MP4 cannot hold transparency; for a see-through prep video use WebM (VP9 alpha) or the blend-mode option in the Look tab.

@@ -18,6 +18,14 @@ services:
         value: "1558578154820604014"
       - key: VOICE_CHANNEL_ID
         value: "1486496068295331932"
+      - key: CONTROL_PIN
+        sync: false
+      - key: YT_API_KEY
+        sync: false
+      - key: LIVE_FOLDER_ID
+        value: "1558768008124702760"
+      - key: LIVE_STORAGE_ID
+        value: "1558768054400196618"
       - key: DATA_DIR
         value: /var/data
     disk:                    # optional (paid): keeps request counts across deploys
